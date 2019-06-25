@@ -92,23 +92,19 @@ bot.dialog('query', [
         var upto = builder.EntityRecognizer.findEntity(intent.entities,'upto');
         var range = builder.EntityRecognizer.findAllEntities(intent.entities, 'builtin.datetimeV2.daterange');
         if(upto){
-            console.log("______________________________")
             if (range.length==2) {
-                console.log("((((((((((((((((((")
                 var rangeStart = new Date(range[0].resolution.values[0].start);
                 var start = moment([rangeStart.getFullYear(), rangeStart.getMonth(), rangeStart.getDate()])
                 var rangeEnd = new Date(range[1].resolution.values[0].end);
                 var end = moment([rangeEnd.getFullYear(), rangeEnd.getMonth(), rangeEnd.getDate()])
             }
             else if(range && day.length>0){
-                console.log(":::::::::::::::::::::::::::::::::::::::")
                 var rangeStart = new Date(range[0].resolution.values[0].start);
                 var start = moment([rangeStart.getFullYear(), rangeStart.getMonth(), rangeStart.getDate()])
                 var rangeEnd = new Date(day[0]);
                 var end = moment([rangeEnd.getFullYear(), rangeEnd.getMonth(), rangeEnd.getDate()])
             }
             else if(range && num){
-                console.log("++++++++++++++++++++++++")
                 var rangeStart = new Date(range[0].resolution.values[0].start);
                 var start = moment([rangeStart.getFullYear(), rangeStart.getMonth(), rangeStart.getDate()])
                 var rangeEnd = new Date();
@@ -121,7 +117,6 @@ bot.dialog('query', [
         }
         else{
             if(range.length>0){
-                console.log(range,"{{{{{{{{{}{{{{{{{{{{{{{{{{{")
                 var rangeStart = new Date(range[0].resolution.values[0].start);
                 var start = moment([rangeStart.getFullYear(), rangeStart.getMonth(), rangeStart.getDate()])
                 var rangeEnd = new Date(range[1].resolution.values[0].end);
@@ -137,7 +132,7 @@ bot.dialog('query', [
                 if (curr && range.length==0) {
                     day.push(data[0].Time);
                 }
-                if(day.length>0){
+                if(day.length>0 && range.length==0){
                     day.forEach(dateGiven=>{
                         data.forEach(element=>{
                             if (dateGiven == element.Time) {
@@ -163,13 +158,11 @@ bot.dialog('query', [
                     })
                 }
                 else if(range.length>0){
-                    console.log("########################")
                     data.forEach(element=>{
                         var date = new Date(element.Time)
                         var dateM = moment([date.getFullYear(), date.getMonth(), date.getDate()])
                         total = end.diff(start, 'days');
                         if (dateM >= start && dateM < end) {
-                            console.log("$$$$$$$$$$$$$$$")
                             quer.forEach(query=>{
                                 if (query == "price") {
                                     sales = sales + element.Price;
@@ -184,8 +177,8 @@ bot.dialog('query', [
                                     session.conversationData.content["Margin"] = Math.round(margin / total);
                                 }
                             });
-                            session.conversationData.content["FromDate"] = range.resolution.values[0].start;
-                            session.conversationData.content["ToDate"] = range.resolution.values[0].end;
+                            session.conversationData.content["FromDate"] = start;
+                            session.conversationData.content["ToDate"] = end;
                         }
                     });
                     session.replaceDialog('showInfo')
