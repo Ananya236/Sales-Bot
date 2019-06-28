@@ -83,80 +83,171 @@ function fetchData(session) {
                 }
                 if (session.conversationData.day.length > 0 && session.conversationData.range.length == 0) {
                     session.conversationData.day.forEach(dateGiven => {
-                        data.forEach(element => {
-                            if (dateGiven == element.Time) {
-                                total++;
-                                if(session.conversationData.day.length==1){
-                                    min=element.Price;
-                                }
-                                if (element.Price > max)
-                                    max = element.Price;
-                                if (element.Price < min)
-                                    min = element.Price;
-                                sales = sales + element.Price;
-                                cost = cost + element.Cost;
-                                margin = margin + (element.Price - element.Cost);
-                                // session.conversationData.quer.forEach(query => {
-                                //     if (query == "price") {
-                                //         sales = sales + element.Price;
-                                //         session.conversationData.content["Price"] = Math.round(sales / total);
-                                //     }
-                                //     else if (query == "cost") {
-                                //         cost = cost + element.Cost;
-                                //         session.conversationData.content["Cost"] = Math.round(cost / total);
-                                //     }
-                                //     else {
-                                //         margin = margin + (element.Price - element.Cost);
-                                //         session.conversationData.content["Margin"] = Math.round(margin / total);
-                                //     }
-                                // });
-                                session.conversationData.content["Date"] = element.Time;
-                                session.conversationData.content["Price"] = Math.round(sales / total);
-                                session.conversationData.content["Cost"] = Math.round(cost / total);
-                                session.conversationData.content["Margin"] = Math.round(margin / total);
-                                session.conversationData.content["High"] = max;
-                                session.conversationData.content["Low"] = min;
+                        session.conversationData.quer.forEach(query => {
+                            if (query == "profit") {
+                                data.forEach(element => {
+                                    if (dateGiven == element.Time) {
+                                        margin = element.Price - element.Cost;
+                                        if (maxMargin < margin) {
+                                            maxMargin = margin;
+                                            session.conversationData.day.push(element.Time);
+                                            session.conversationData.show = "max";
+                                            sales = element.Price;
+                                            cost = element.Cost;
+                                            max = sales;
+                                            min = sales;
+                                            session.conversationData.content["Steel"] = element.Material;
+                                            session.conversationData.content["Date"] = element.Time;
+                                        }
+                                        session.conversationData.content["Price"] = sales;
+                                        session.conversationData.content["Cost"] = cost;
+                                        session.conversationData.content["Margin"] = maxMargin;
+                                        session.conversationData.content["High"] = max;
+                                        session.conversationData.content["Low"] = min;
+                                    }
+                                })
+                            }
+                            else if (query == "loss") {
+                                data.forEach(element => {
+                                    if (dateGiven == element.Time) {
+                                        margin = element.Price - element.Cost;
+                                        if (minMargin > margin) {
+                                            minMargin = margin;
+                                            session.conversationData.day.push(element.Time);
+                                            session.conversationData.show = "min";
+                                            sales = element.Price;
+                                            cost = element.Cost;
+                                            max = sales;
+                                            min = sales;
+                                            session.conversationData.content["Steel"] = element.Material;
+                                            session.conversationData.content["Date"] = element.Time;
+                                        }
+                                        session.conversationData.content["Price"] = sales;
+                                        session.conversationData.content["Cost"] = cost;
+                                        session.conversationData.content["Margin"] = minMargin;
+                                        session.conversationData.content["High"] = max;
+                                        session.conversationData.content["Low"] = min;
+                                    }
+                                })
+                            }
+                            else {
+                                data.forEach(element => {
+                                    if (dateGiven == element.Time) {
+                                        total++;
+                                        if (session.conversationData.day.length == 1 && session.conversationData.steel.length == 1) {
+                                            min = element.Price;
+                                        }
+                                        if (element.Price > max)
+                                            max = element.Price;
+                                        if (element.Price < min)
+                                            min = element.Price;
+                                        sales = sales + element.Price;
+                                        cost = cost + element.Cost;
+                                        margin = margin + (element.Price - element.Cost);
+                                        session.conversationData.content["Date"] = element.Time;
+                                        session.conversationData.content["Price"] = Math.round(sales / total);
+                                        session.conversationData.content["Cost"] = Math.round(cost / total);
+                                        session.conversationData.content["Margin"] = Math.round(margin / total);
+                                        session.conversationData.content["High"] = max;
+                                        session.conversationData.content["Low"] = min;
+                                        session.conversationData.show = "avg";
+                                    }
+                                });
                             }
                         });
                         session.replaceDialog('showInfo');
                     })
                 }
                 else if (session.conversationData.range.length > 0) {
-                    data.forEach(element => {
-                        var date = new Date(element.Time)
-                        var dateM = moment([date.getFullYear(), date.getMonth(), date.getDate()])
-                        total = session.conversationData.end.diff(session.conversationData.start, 'days');
-                        if (dateM >= session.conversationData.start && dateM < session.conversationData.end) {
-                            if (element.Price > max)
-                                max = element.Price;
-                            if (element.Price < min)
-                                min = element.Price;
-                            sales = sales + element.Price;
-                            cost = cost + element.Cost;
-                            margin = margin + (element.Price - element.Cost);
-                            // session.conversationData.quer.forEach(query => {
-                            //     if (query == "price") {
-                            //         sales = sales + element.Price;
-                            //         session.conversationData.content["Price"] = Math.round(sales / total);
-                            //     }
-                            //     else if (query == "cost") {
-                            //         cost = cost + element.Cost;
-                            //         session.conversationData.content["Cost"] = Math.round(cost / total);
-                            //     }
-                            //     else {
-                            //         margin = margin + (element.Price - element.Cost);
-                            //         session.conversationData.content["Margin"] = Math.round(margin / total);
-                            //     }
-                            // });
-                            session.conversationData.content["FromDate"] = session.conversationData.start;
-                            session.conversationData.content["ToDate"] = session.conversationData.end;
-                            session.conversationData.content["Price"] = Math.round(sales / total);
-                            session.conversationData.content["Cost"] = Math.round(cost / total);
-                            session.conversationData.content["Margin"] = Math.round(margin / total);
-                            session.conversationData.content["High"] = max;
-                            session.conversationData.content["Low"] = min;
+                    session.conversationData.quer.forEach(query => {
+                        if (query == "profit") {
+                            data.forEach(element => {
+                                var date = new Date(element.Time)
+                                var dateM = moment([date.getFullYear(), date.getMonth(), date.getDate()])
+                                if (dateM >= session.conversationData.start && dateM < session.conversationData.end) {
+                                    margin = element.Price - element.Cost;
+                                    if (maxMargin < margin) {
+                                        maxMargin = margin;
+                                        session.conversationData.day.push(element.Time);
+                                        session.conversationData.range = [];
+                                        session.conversationData.show = "max";
+                                        sales = element.Price;
+                                        cost = element.Cost;
+                                        max = sales;
+                                        min = sales;
+                                        session.conversationData.content["Steel"] = element.Material;
+                                        session.conversationData.content["Date"] = element.Time;
+                                    }
+                                    session.conversationData.content["Price"] = sales;
+                                    session.conversationData.content["Cost"] = cost;
+                                    session.conversationData.content["Margin"] = maxMargin;
+                                    session.conversationData.content["High"] = max;
+                                    session.conversationData.content["Low"] = min;
+                                }
+                            })
                         }
-                    });
+                        else if (query == "loss") {
+                            data.forEach(element => {
+                                var date = new Date(element.Time)
+                                var dateM = moment([date.getFullYear(), date.getMonth(), date.getDate()])
+                                if (dateM >= session.conversationData.start && dateM < session.conversationData.end) {
+                                    margin = element.Price - element.Cost;
+                                    if (minMargin >= margin) {
+                                        minMargin = margin;
+                                        session.conversationData.day.push(element.Time);
+                                        session.conversationData.range = [];
+                                        session.conversationData.show = "min";
+                                        sales = element.Price;
+                                        cost = element.Cost;
+                                        max = sales;
+                                        min = sales;
+                                        session.conversationData.content["Steel"] = element.Material;
+                                        session.conversationData.content["Date"] = element.Time;
+                                    }
+                                    else{
+                                        session.conversationData.day.push(element.Time);
+                                        session.conversationData.range = [];
+                                        session.conversationData.show = "min";
+                                        session.conversationData.content["Steel"] = element.Material;
+                                        session.conversationData.content["Date"] = element.Time;
+                                        sales = data[0].Price;
+                                        cost = data[0].Cost;
+                                        max = sales;
+                                        min = sales;
+                                    }
+                                    session.conversationData.content["Price"] = sales;
+                                    session.conversationData.content["Cost"] = cost;
+                                    session.conversationData.content["Margin"] = minMargin;
+                                    session.conversationData.content["High"] = max;
+                                    session.conversationData.content["Low"] = min;
+                                }
+                            })
+                        }
+                        else {
+                            data.forEach(element => {
+                                var date = new Date(element.Time)
+                                var dateM = moment([date.getFullYear(), date.getMonth(), date.getDate()])
+                                total = session.conversationData.end.diff(session.conversationData.start, 'days');
+                                if (dateM >= session.conversationData.start && dateM < session.conversationData.end) {
+                                    if (element.Price > max)
+                                        max = element.Price;
+                                    if (element.Price < min)
+                                        min = element.Price;
+                                    sales = sales + element.Price;
+                                    cost = cost + element.Cost;
+                                    margin = margin + (element.Price - element.Cost);
+                                    session.conversationData.content["FromDate"] = session.conversationData.start;
+                                    session.conversationData.content["ToDate"] = session.conversationData.end;
+                                    session.conversationData.content["Price"] = Math.round(sales / total);
+                                    session.conversationData.content["Cost"] = Math.round(cost / total);
+                                    session.conversationData.content["Margin"] = Math.round(margin / total);
+                                    session.conversationData.content["High"] = max;
+                                    session.conversationData.content["Low"] = min;
+                                    session.conversationData.show = "avg";
+                                }
+                            });
+                        }
+                    })
                     session.replaceDialog('showInfo')
                 }
                 else {
@@ -165,9 +256,9 @@ function fetchData(session) {
                             data.forEach(element => {
                                 margin = element.Price - element.Cost;
                                 if (maxMargin < margin) {
-                                    console.log(margin);
                                     maxMargin = margin;
                                     session.conversationData.day.push(element.Time);
+                                    session.conversationData.show = "max";
                                     sales = element.Price;
                                     cost = element.Cost;
                                     max = sales;
@@ -182,12 +273,13 @@ function fetchData(session) {
                                 session.conversationData.content["Low"] = min;
                             })
                         }
-                        else if(query=="loss"){
+                        else if (query == "loss") {
                             data.forEach(element => {
                                 margin = element.Price - element.Cost;
                                 if (minMargin > margin) {
                                     minMargin = margin;
                                     session.conversationData.day.push(element.Time);
+                                    session.conversationData.show = "min";
                                     sales = element.Price;
                                     cost = element.Cost;
                                     max = sales;
@@ -218,6 +310,7 @@ function fetchData(session) {
                                 session.conversationData.content["Margin"] = Math.round(margin / total);
                                 session.conversationData.content["High"] = max;
                                 session.conversationData.content["Low"] = min;
+                                session.conversationData.show = "avg";
                             })
                         }
                     })
@@ -271,12 +364,12 @@ function getEntity(intent, session) {
             session.conversationData.end = moment([rangeEnd.getFullYear(), rangeEnd.getMonth(), rangeEnd.getDate()])
         }
     }
-    if (session.conversationData.day.length == 0 && session.conversationData.range.length == 0 && !session.conversationData.curr) {
-        return false;
-    }
-    else {
-        fetchData(session);
-    }
+    // if (session.conversationData.day.length == 0 && session.conversationData.range.length == 0 && !session.conversationData.curr) {
+    //     return false;
+    // }
+    // else {
+    //     fetchData(session);
+    // }
 }
 
 bot.dialog('/', [
@@ -307,22 +400,23 @@ bot.dialog('query', [
         }
         var flag = true;
         flag = getEntity(intent, session);
-        if (flag == false) {
-            builder.Prompts.choice(session, 'Is there any specific date or range?', 'Yes|No', { listStyle: builder.ListStyle.button });
-        }
-    },
-    function (session, results) {
-        if (results.response.entity == "Yes") {
-            builder.Prompts.text(session, "please specify the date or range");
-        }
-        else {
-            fetchData(session);
-        }
-    },
-    function (session, results) {
-        if (results.response) {
-            getEntity(result, session);
-        }
+        fetchData(session);
+        //     if (flag == false) {
+        //         builder.Prompts.choice(session, 'Is there any specific date or range?', 'Yes|No', { listStyle: builder.ListStyle.button });
+        //     }
+        // },
+        // function (session, results) {
+        //     if (results.response.entity == "Yes") {
+        //         builder.Prompts.text(session, "please specify the date or range");
+        //     }
+        //     else {
+        //         fetchData(session);
+        //     }
+        // },
+        // function (session, results) {
+        //     if (results.response) {
+        //         getEntity(result, session);
+        //     }
     }
 ]).triggerAction({
     matches: 'query'
@@ -361,13 +455,6 @@ bot.dialog('showInfo', [
                                         "type": "Column",
                                         "width": "stretch",
                                         "items": [
-                                            {
-                                                "type": "TextBlock",
-                                                "text": "Margin on an average:",
-                                                //"size": "medium",
-                                                "spacing": "none",
-                                                "isSubtle": true
-                                            },
                                             {
                                                 "type": "TextBlock",
                                                 "text": Math.abs(session.conversationData.content.Margin),
@@ -427,14 +514,44 @@ bot.dialog('showInfo', [
                 }
             )
         }
+        if (session.conversationData.show == "max") {
+            card.content.body[1].items[0].columns[0].items.unshift(
+                {
+                    "type": "TextBlock",
+                    "text": "Maximum Margin",
+                    "spacing": "none",
+                    "isSubtle": true
+                }
+            )
+        }
+        else if (session.conversationData.show == "min") {
+            card.content.body[1].items[0].columns[0].items.unshift(
+                {
+                    "type": "TextBlock",
+                    "text": "Minimum Margin",
+                    "spacing": "none",
+                    "isSubtle": true
+                }
+            )
+        }
+        else {
+            card.content.body[1].items[0].columns[0].items.unshift(
+                {
+                    "type": "TextBlock",
+                    "text": "Margin on an average:",
+                    "spacing": "none",
+                    "isSubtle": true
+                },
+            )
+        }
         if (session.conversationData.content.Margin < 0) {
             card.content.body[1].items[0].columns[0].items.push(
                 {
                     "type": "TextBlock",
                     "text": `▼ ${Math.round(Math.abs(session.conversationData.content.Margin) / session.conversationData.content.Cost * 100)}%`,
                     "size": "small",
+                    "spacing": "none",
                     "color": "warning",
-                    "spacing": "none"
                 }
             )
         }
